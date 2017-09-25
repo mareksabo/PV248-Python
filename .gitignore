@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# from Red Hat
+*.py[co]
+build/*
+dist/*
+MANIFEST
+.spyderproject
+*.un~
