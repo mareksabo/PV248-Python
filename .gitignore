@@ -112,3 +112,6 @@ MANIFEST
 *.un~
 
 *.iml
+
+# Exclude DB files
+*.dat

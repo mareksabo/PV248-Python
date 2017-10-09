@@ -1,5 +1,4 @@
 import re  # regular expressions
-from collections import Counter
 import sqlite3
 
 
@@ -9,9 +8,9 @@ import sqlite3
 
 
 class DBItem:
-    def __init__(self, conn):
+    def __init__(self, connection):
         self.id = None
-        self.cursor = conn.cursor()
+        self.cursor = connection.cursor()
 
     def store(self):
         self.fetch_id()
@@ -27,26 +26,36 @@ class DBItem:
 
 
 class Person(DBItem):
+    def __init__(self, connection, string):
+        super().__init__(connection)
+        if string is None:
+            return
 
-
-    def __init__(self, conn, string):
-        super().__init__(conn)
         self.name = re.sub('\([0-9+-]+\)', '', string)
+        self.born = None
+        self.died = None
 
-        bornDieRegex = re.compile(r"(.*) \((.*)--(.*)\)")
-        years = bornDieRegex.match(string)
+        born_die_regex = re.compile(r".* \(([0-9]+)--([0-9]+).*\)")
+        years = born_die_regex.match(string)
 
-        born = years.group(2)
-        died = years.group(3)
-        if born is not None: self.born = int(born)
-        if died is not None: self.died = int()
+        if years is not None:
+
+            born = years.group(1).strip()
+            died = years.group(2).strip()
+
+            if born:
+                self.born = int(born)
+            if died:
+                self.died = int(died)
 
     def fetch_id(self):
-        self.cursor.execute("SELECT id FROM person WHERE name = ?", (self.name,))
+        self.cursor.execute("SELECT id FROM person WHERE name = ? AND born = ? AND died = ?",
+                            (self.name, self.born, self.died))
         self.id = self.cursor.fetchone()
 
     def do_store(self):
-        self.cursor.execute("INSERT INTO person (name, born, died) VALUES (?)", (self.name, self.born, self.died))
+        self.cursor.execute("INSERT INTO person (name, born, died) VALUES (?, ?, ?)",
+                            (self.name, self.born, self.died))
 
 
 if __name__ == '__main__':
@@ -57,7 +66,8 @@ if __name__ == '__main__':
 
     for line in open('scorelib.txt', 'r', encoding='utf-8'):
         matchComposersWithYear = keyValueRegex.match(line)
-        if matchComposersWithYear is None: continue
+        if matchComposersWithYear is None:
+            continue
 
         key = matchComposersWithYear.group(1)
         value = matchComposersWithYear.group(2)
@@ -67,4 +77,5 @@ if __name__ == '__main__':
             for composerWithYear in value.split(";"):
                 p = Person(conn, composerWithYear.strip())
                 p.store()
+
     conn.commit()
