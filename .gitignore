@@ -113,5 +113,3 @@ MANIFEST
 
 *.iml
 
-# Exclude DB files
-*.dat
