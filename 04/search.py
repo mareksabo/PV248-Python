@@ -13,12 +13,15 @@ connection = sqlite3.connect('scorelib.dat')
 cursor = connection.cursor()
 cursor.execute("SELECT person.name, score.name FROM score JOIN score_author JOIN person "
                "ON score.id = score_author.score AND score_author.composer = person.id "
-               "WHERE person.name LIKE ? GROUP BY person.name", ("%{}%".format(searchedName),))
+               "WHERE person.name LIKE ? ORDER BY person.name", ("%{}%".format(searchedName),))
 
-composerNames = []
+scores = {}
 
 for row in cursor:
-    composerNames.append(row)
 
-d = {"name": searchedName, "searched names": composerNames, "searched names size" : len(composerNames) }
-json.dump(d, sys.stdout, indent=4)
+    if row[0] not in scores:
+        scores[row[0]] = []
+
+    scores[row[0]].append(row[1])
+
+json.dump(scores, sys.stdout, indent=4)
