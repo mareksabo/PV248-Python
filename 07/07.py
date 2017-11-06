@@ -20,7 +20,6 @@ def search_name(searched_name, is_json):
             scores[row[0]] = []
         scores[row[0]].append(row[1])
 
-    print(scores)
     json_output = json.dumps(scores, indent=4)
     if is_json:
         return json_output
@@ -33,7 +32,8 @@ class LocalHttpServer(BaseHTTPRequestHandler):
         is_json = False
         parsed_url = urlparse(self.path[1:])
         if parsed_url.path != "result":
-            message = "Look at /result"
+            message = "<form action=\"/result?f=html\" method=\"get\">Searched name:<br><input type=\"text\" " \
+                      "name=\"q\"><input type=\"submit\" value=\"Submit\"></form>"
         else:
             d = parse_qs(parsed_url.query)
             is_json = 'json' == d['f'][0] if ('f' in d) else False
