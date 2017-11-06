@@ -32,8 +32,10 @@ class LocalHttpServer(BaseHTTPRequestHandler):
         is_json = False
         parsed_url = urlparse(self.path[1:])
         if parsed_url.path != "result":
-            message = "<form action=\"/result?f=html\" method=\"get\">Searched name:<br><input type=\"text\" " \
-                      "name=\"q\"><input type=\"submit\" value=\"Submit\"></form>"
+            message = "<form action=\"/result\" method=\"get\">Searched name:<br><input type=\"text\" name=\"q\"><br>" \
+                      "<input type=\"radio\" name=\"f\" value=\"html\" checked>Html" \
+                      "<input type=\"radio\" name=\"f\" value=\"json\" >Json<br>" \
+                      "<input type=\"submit\" value=\"Submit\"></form>"
         else:
             d = parse_qs(parsed_url.query)
             is_json = 'json' == d['f'][0] if ('f' in d) else False
