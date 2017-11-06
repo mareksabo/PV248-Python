@@ -3,8 +3,10 @@ import sqlite3
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from json2html import *
 
-def search_name(searched_name):
+
+def search_name(searched_name, is_json):
     connection = sqlite3.connect('scorelib.dat')
     cursor = connection.cursor()
     cursor.execute("SELECT person.name, score.name FROM score JOIN score_author JOIN person "
@@ -19,25 +21,31 @@ def search_name(searched_name):
         scores[row[0]].append(row[1])
 
     print(scores)
-    result = json.dumps(scores, indent=4)
-    return result
+    json_output = json.dumps(scores, indent=4)
+    if is_json:
+        return json_output
+    else:
+        return json2html.convert(json=json_output)
 
 
 class LocalHttpServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        print("GET called")
-        self.send_response(200, 'OK')
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+        is_json = False
         parsed_url = urlparse(self.path[1:])
         if parsed_url.path != "result":
             message = "Look at /result"
         else:
-            message = "You sent <b>{}<b>".format(parsed_url.query)
-            dict = parse_qs(parsed_url.query)
-            print(dict['q'][0])
-            message = search_name(dict['q'][0])
-        self.wfile.write(bytes(message, "utf8"))
+            d = parse_qs(parsed_url.query)
+            is_json = 'json' == d['f'][0] if ('f' in d) else False
+            searched_name = d['q'][0] if ('q' in d) else ""
+            message = search_name(searched_name, is_json)
+
+        self.send_response(200, 'OK')
+        format_type = 'json' if is_json else 'html'
+        self.send_header('Content-type', 'text/' + format_type + '; charset=utf-8')
+        self.end_headers()
+
+        self.wfile.write(message.encode())
         return
 
 
