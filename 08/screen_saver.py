@@ -1,5 +1,5 @@
 import pygame
-from pygame import display, draw, time, event, Color
+from pygame import display, draw, time, event
 from random import randint
 
 HEIGHT = 600

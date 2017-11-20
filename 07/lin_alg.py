@@ -1,7 +1,7 @@
 import re
 from collections import Counter
 
-from numpy import linalg, loadtxt, hsplit, matrix, append
+from numpy import linalg, loadtxt, hsplit, matrix, array
 
 orig = loadtxt('matrix.txt')
 
@@ -28,15 +28,18 @@ print('Solution:')
 print(solution)
 
 r = re.compile(r"(.*)[ ]*=[ ]*(.*)")
-aa = Counter()
+final_lists = []
+b = []
 
 for line in open('equations.txt', 'r'):
     parsed = r.match(line)
     left_part = list(filter(None, parsed.group(1).split(' ')))
     right_part = int(parsed.group(2))
+    b.append(right_part)
+
     sign = 1
     number = 1
-    row_matrix = []
+    unknown_vars = Counter()
 
     for p in left_part:
         if p == '+' or p == '-':
@@ -45,5 +48,14 @@ for line in open('equations.txt', 'r'):
             number = int(p)
         else:
             print(p, sign * number)
-            aa[p] = sign * number
-print(aa)
+            unknown_vars[p] = sign * number
+    final_lists.append(list(unknown_vars.values()))
+
+unknown_vars_names = list(unknown_vars.keys())
+
+final_matrix = array(final_lists)
+result = linalg.solve(final_matrix, b)
+
+for i in range(0, len(result)):
+    print("{} = {}".format(unknown_vars_names[i], result[i]))
+
