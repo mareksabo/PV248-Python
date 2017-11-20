@@ -1,7 +1,7 @@
 import re
 from collections import Counter
 
-from numpy import linalg, loadtxt, hsplit
+from numpy import linalg, loadtxt, hsplit, matrix, append
 
 orig = loadtxt('matrix.txt')
 
@@ -29,18 +29,21 @@ print(solution)
 
 r = re.compile(r"(.*)[ ]*=[ ]*(.*)")
 aa = Counter()
-bb = []
+
 for line in open('equations.txt', 'r'):
     parsed = r.match(line)
-    bb.append(parsed.group(2))
     left_part = list(filter(None, parsed.group(1).split(' ')))
-    sign = '+'
+    right_part = int(parsed.group(2))
+    sign = 1
     number = 1
+    row_matrix = []
+
     for p in left_part:
         if p == '+' or p == '-':
-            sign = p
+            sign = -1 if p == '-' else 1
         elif p.isnumeric():
-            number = (int) p
+            number = int(p)
         else:
-            aa[p] = number
-print(bb)
+            print(p, sign * number)
+            aa[p] = sign * number
+print(aa)
